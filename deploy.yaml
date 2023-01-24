@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: books-service
+  name: books-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: books-service
+  template:
+    metadata:
+      labels:
+        app: books-service
+    spec:
+      containers:
+      - image: prastamaha/go-book-api:v1
+        name: go-book-api
+        env:
+        - name: SERVICE_NAME
+          value: "book-api"
+        - name: INSECURE_MODE
+          value: "true"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          value: "otel-collector-opentelemetry-collector.otel.svc.cluster.local:4317"
+        ports:
+        - containerPort: 8090
+          protocol: TCP
+          name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: books-service
+  name: books-service
+spec:
+  ports:
+  - port: 8090
+    protocol: TCP
+    targetPort: 8090
+  selector:
+    app: books-service
